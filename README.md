@@ -1,5 +1,5 @@
 # Python3-MySQL-demo-project
-An example program for Python3 MySQL connector CURD model
+An example program for Python3 MySQL connector CURD model.
 I've used mobiles as an example
 
 # Requirements
