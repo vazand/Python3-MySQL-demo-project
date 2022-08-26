@@ -3,23 +3,29 @@ import mysql.connector
 mydb = mysql.connector.connect(
     host="localhost", username="username", password="password", database="mobileshop"
 )
-mycursor = mydb.cursor()
 
 # mycursor.execute("CREATE DATABASE mobileshop")
 # mycursor.execute("SHOW DATABASES")
 # print(mydb)
 
-try:
-    mycursor.execute("CREATE TABLE MobileProducts(id INT AUTO_INCREMENT PRIMARY KEY,mobilename VARCHAR(30), price INT(6))")
-except :
-    print("===> Table exists <===")
+def showTitle():
+    mobile_id = "ID_Num"
+    mobile_name = "Mobile_Name".center(25)
+    mobile_price = "Price".title()
+    print("\n" + mobile_id, mobile_name, mobile_price + "\n")
+
 
 def showAllProducts():
     print("Showing List of Mobiles")
     mycursor.execute("SELECT * FROM MobileProducts")
     all_products = mycursor.fetchall()
+    showTitle()
     for details in all_products:
-        print(details)
+        id = details[0]
+        name = details[1].center(30)
+        price = details[2]
+        print(id, name, price)
+
 
 def addProduct(mobilename, price):
     sql = "INSERT INTO `MobileProducts` (mobilename,price) VALUES(%s,%s)"
@@ -27,9 +33,10 @@ def addProduct(mobilename, price):
     try:
         mycursor.execute(sql, values)
         mydb.commit()
-        print("\n*** "+mobilename + " added ***\n")
+        print("\n*** " + mobilename + " added ***\n")
     except:
-        print("\n----> Price must be a Number <---\n")    
+        print("\n----> Price must be a Number <---\n")
+
 
 def updateProduct(id):
     try:
@@ -37,35 +44,50 @@ def updateProduct(id):
             try:
                 mobilename = input("Enter New Mobile Name : ")
                 price = input("Enter NEW Mobile Price: ")
-                sql = "UPDATE `MobileProducts` SET mobilename = %s,  price = %s WHERE id = %s ;"
                 values = (mobilename, price, id)
+                sql = "UPDATE `MobileProducts` SET mobilename = %s,  price = %s WHERE id = %s ;"
                 mycursor.execute(sql, values)
                 mydb.commit()
-                print("\n +++ Product %s updated +++\n"%mobilename)
+                print(mycursor.rowcount, "record updated")
             except:
                 print("\n----> Failed to update! reason => Price must be a Number <---\n")    
     except:
         print("---> Failed to update! reason => ID must be a Number <---")
 
+
 def deleteProduct(mobile_id_num):
-    sql = "DELETE FROM `MobileProducts`  WHERE id = %s ;"
     try:
-        mycursor.execute(sql, (mobile_id_num,))
-        mydb.commit()
-        print("\n --- Product %s Deleted --- \n "%mobile_id_num)
-    except:
-        print("----> NO Data Found id = %s <----"%mobile_id_num)
+        if type(int(mobile_id_num)) == int:
+            sql = "DELETE FROM `MobileProducts`  WHERE id = %s ;" % mobile_id_num
+            try:
+                mycursor.execute(sql)
+                mydb.commit()
+                print(mycursor.rowcount, "record deleted")
+            except:
+                print("----> NO Data Found id = %s <----" % mobile_id_num)
+    except :
+        print("---> Failed to delete! reason => ID must be a Number <---")
 
 def showSingleProduct(mobile_id):
     sql = "SELECT * FROM MobileProducts WHERE id = %s;"
     try:
         mycursor.execute(sql, (mobile_id,))
         one_product = mycursor.fetchone()
-        print(one_product)
+        showTitle()
+        print(one_product[0], one_product[1].center(30), one_product[2])
         print("\n\n")
         no_inp = input("press any to continue...")
     except:
-        print("----> NO Data Found id = %s <----"%mobile_id)
+        print("----> NO Data Found id = %s <----" % mobile_id)
+
+
+mycursor = mydb.cursor()
+try:
+    mycursor.execute(
+        "CREATE TABLE MobileProducts(id INT AUTO_INCREMENT PRIMARY KEY,mobilename VARCHAR(30), price INT(6))"
+    )
+except:
+    print("===> Table exists <===")
 
 
 while True:
@@ -102,3 +124,6 @@ while True:
         showSingleProduct(user_input_id)
     else:
         print("Wrong Input, please check your input...!")
+    mycursor.close()
+    mycursor = mydb.cursor()
+
